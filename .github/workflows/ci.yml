@@ -18,9 +18,27 @@ jobs:
       - run: mypy src
       - run: pytest
 
+  check-secrets:
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      secrets-available: ${{ steps.check.outputs.result }}
+    steps:
+      - id: check
+        env:
+          TAVILY_KEY: ${{ secrets.TAVILY_API_KEY }}
+          GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [[ -n "$TAVILY_KEY" && -n "$GEMINI_KEY" ]]; then
+            echo "result=true" >> $GITHUB_OUTPUT
+          else
+            echo "result=false" >> $GITHUB_OUTPUT
+          fi
+
   live-api-integration:
     runs-on: ubuntu-latest
-    if: ${{ secrets.TAVILY_API_KEY != '' && secrets.GEMINI_API_KEY != '' }}
+    needs: check-secrets
+    if: needs.check-secrets.outputs.secrets-available == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -34,7 +52,8 @@ jobs:
 
   full-pipeline:
     runs-on: ubuntu-latest
-    if: ${{ secrets.TAVILY_API_KEY != '' && secrets.GEMINI_API_KEY != '' }}
+    needs: check-secrets
+    if: needs.check-secrets.outputs.secrets-available == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
