@@ -5,6 +5,7 @@ Summary: Deterministic, extensible ablation experimentation engine
 Author: ActionLab
 Requires-Python: >=3.11
 Description-Content-Type: text/markdown
+Requires-Dist: tabulate>=0.9
 Requires-Dist: pydantic>=2.7
 Requires-Dist: PyYAML>=6.0
 Requires-Dist: numpy>=1.26
@@ -26,6 +27,7 @@ Requires-Dist: pip-audit>=2.7; extra == "dev"
 Requires-Dist: cyclonedx-bom>=4.1; extra == "dev"
 Requires-Dist: mkdocs>=1.6; extra == "dev"
 Requires-Dist: mkdocs-material>=9.5; extra == "dev"
+Requires-Dist: types-PyYAML>=6.0; extra == "dev"
 
 # actionlab-ablation-runner
 
