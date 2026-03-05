@@ -9,7 +9,7 @@ from actionlab_ablation_runner.engine.executor import run_experiments
 from actionlab_ablation_runner.engine.generator import generate_variants
 from actionlab_ablation_runner.engine.stats import compute_significance
 from actionlab_ablation_runner.paper.typst_writer import write_typst
-from actionlab_ablation_runner.research.clients import GeminiClient, TavilyClient
+from actionlab_ablation_runner.research.clients import OpenRouterClient, TavilyClient
 from actionlab_ablation_runner.research.pipeline import generate_paper_sections
 from actionlab_ablation_runner.schemas import TelemetryEvent
 from actionlab_ablation_runner.utils.logging import get_logger
@@ -40,8 +40,8 @@ def run_pipeline(config_path: str = "config.yaml") -> None:
     )
 
     tavily = TavilyClient()
-    gemini = GeminiClient()
-    section = generate_paper_sections(config, metrics_frame, out_dir, tavily, gemini)
+    openrouter = OpenRouterClient()
+    section = generate_paper_sections(config, metrics_frame, out_dir, tavily, openrouter)
 
     write_typst(section, out_dir / "paper.typ")
 

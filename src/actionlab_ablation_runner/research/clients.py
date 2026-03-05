@@ -44,25 +44,31 @@ class TavilyClient:
         return items
 
 
-class GeminiClient:
-    def __init__(self, api_key: str | None = None, model: str = "gemini-2.0-flash") -> None:
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY", "")
+class OpenRouterClient:
+    def __init__(
+        self,
+        api_key: str | None = None,
+        model: str = "google/gemini-2.0-flash-exp:free",
+    ) -> None:
+        self.api_key = api_key or os.getenv("OPENROUTER_API_KEY", "")
         self.model = model
 
     @with_backoff
     def generate_section(self, prompt: str) -> dict[str, Any]:
         if not self.api_key:
-            raise RuntimeError("Missing GEMINI_API_KEY")
-        endpoint = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
-            f"?key={self.api_key}"
-        )
+            raise RuntimeError("Missing OPENROUTER_API_KEY")
+        endpoint = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
         body = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"response_mime_type": "application/json"},
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "response_format": {"type": "json_object"},
         }
         with httpx.Client(timeout=60.0) as client:
-            response = client.post(endpoint, json=body)
+            response = client.post(endpoint, headers=headers, json=body)
             response.raise_for_status()
             result: dict[str, Any] = response.json()
             return result
@@ -72,7 +78,7 @@ def synthesize_research(
     sources: list[SourceItem],
     ablation_table_markdown: str,
     out_dir: Path,
-    client: GeminiClient,
+    client: OpenRouterClient,
 ) -> GeminiSection:
     citation_lines = "\n".join(f"- {s.title}: {s.url}" for s in sources)
     prompt = (
@@ -84,7 +90,7 @@ def synthesize_research(
     )
     raw = client.generate_section(prompt)
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "gemini_raw.json").write_text(json.dumps(raw, indent=2))
-    text = raw["candidates"][0]["content"]["parts"][0]["text"]
+    (out_dir / "openrouter_raw.json").write_text(json.dumps(raw, indent=2))
+    text = raw["choices"][0]["message"]["content"]
     section = GeminiSection.model_validate_json(text)
     return section

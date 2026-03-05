@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 from actionlab_ablation_runner.research.clients import (
-    GeminiClient,
+    OpenRouterClient,
     TavilyClient,
     synthesize_research,
 )
@@ -36,7 +36,7 @@ def generate_paper_sections(
     ablations_frame: pd.DataFrame,
     out_dir: Path,
     tavily: TavilyClient,
-    gemini: GeminiClient,
+    openrouter: OpenRouterClient,
 ) -> GeminiSection:
     sources = collect_sources(config, out_dir, tavily)
     grouped = (
@@ -44,5 +44,5 @@ def generate_paper_sections(
         .mean()
         .sort_values("accuracy", ascending=False)
     )
-    section = synthesize_research(sources, grouped.to_markdown(), out_dir, gemini)
+    section = synthesize_research(sources, grouped.to_markdown(), out_dir, openrouter)
     return section
