@@ -1,0 +1,2 @@
+[console_scripts]
+actionlab = actionlab_ablation_runner.cli:app
