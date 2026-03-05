@@ -48,7 +48,7 @@ class OpenRouterClient:
     def __init__(
         self,
         api_key: str | None = None,
-        model: str = "google/gemini-2.0-flash-exp:free",
+        model: str = "meta-llama/llama-3.1-8b-instruct:free",
     ) -> None:
         self.api_key = api_key or os.getenv("OPENROUTER_API_KEY", "")
         self.model = model
