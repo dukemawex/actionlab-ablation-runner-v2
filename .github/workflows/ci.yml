@@ -27,9 +27,9 @@ jobs:
       - id: check
         env:
           TAVILY_KEY: ${{ secrets.TAVILY_API_KEY }}
-          GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
-          if [[ -n "$TAVILY_KEY" && -n "$GEMINI_KEY" ]]; then
+          if [[ -n "$TAVILY_KEY" && -n "$OPENROUTER_KEY" ]]; then
             echo "result=true" >> $GITHUB_OUTPUT
           else
             echo "result=false" >> $GITHUB_OUTPUT
@@ -48,7 +48,7 @@ jobs:
       - run: pytest tests/integration/test_live_research_apis.py -m integration
         env:
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
   full-pipeline:
     runs-on: ubuntu-latest
@@ -63,7 +63,7 @@ jobs:
       - run: actionlab run --config config.yaml
         env:
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       - run: test -f artifacts/paper.typ
 
   build-paper:
@@ -90,6 +90,7 @@ jobs:
 
   deploy-pages:
     needs: docs
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       pages: write
       id-token: write
