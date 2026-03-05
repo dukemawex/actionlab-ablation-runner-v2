@@ -18,6 +18,7 @@ def test_live_tavily_and_gemini() -> None:
 
     gemini = GeminiClient()
     raw = gemini.generate_section(
-        "Return JSON with keys abstract, methods, interpretation, hypothesis_framing, statistical_testing, threats_to_validity, ethical_considerations, citations"
+        "Return JSON with keys abstract, methods, interpretation, hypothesis_framing, "
+        "statistical_testing, threats_to_validity, ethical_considerations, citations"
     )
     assert "candidates" in raw

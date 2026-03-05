@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -11,7 +10,9 @@ from scipy.stats import ttest_ind
 from actionlab_ablation_runner.schemas import StatTestResult
 
 
-def _bootstrap_effect_ci(a: np.ndarray, b: np.ndarray, seed: int, n_boot: int = 2000) -> tuple[float, float, float]:
+def _bootstrap_effect_ci(
+    a: np.ndarray, b: np.ndarray, seed: int, n_boot: int = 2000
+) -> tuple[float, float, float]:
     rng = np.random.default_rng(seed)
     diffs = []
     for _ in range(n_boot):
@@ -24,7 +25,9 @@ def _bootstrap_effect_ci(a: np.ndarray, b: np.ndarray, seed: int, n_boot: int = 
     return effect, float(ci_low), float(ci_high)
 
 
-def compute_significance(df: pd.DataFrame, baseline_variant: str, out_dir: Path, seed: int) -> list[StatTestResult]:
+def compute_significance(
+    df: pd.DataFrame, baseline_variant: str, out_dir: Path, seed: int
+) -> list[StatTestResult]:
     out_dir.mkdir(parents=True, exist_ok=True)
     baseline = df[df["variant"] == baseline_variant]
     results: list[StatTestResult] = []

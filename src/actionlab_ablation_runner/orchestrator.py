@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from actionlab_ablation_runner.engine.config import load_config
@@ -24,11 +24,20 @@ def run_pipeline(config_path: str = "config.yaml") -> None:
     logger.info("generated_variants", extra={"extra_payload": {"count": len(variants)}})
 
     metrics_frame = run_experiments(config.experiment, variants, out_dir)
-    summary = metrics_frame.groupby("variant")[["accuracy", "f1"]].mean().sort_values("accuracy", ascending=False)
+    summary = (
+        metrics_frame.groupby("variant")[["accuracy", "f1"]]
+        .mean()
+        .sort_values("accuracy", ascending=False)
+    )
     (out_dir / "metrics.json").write_text(summary.to_json(indent=2))
 
     baseline_variant = summary.index[0]
-    stats = compute_significance(metrics_frame, baseline_variant=baseline_variant, out_dir=out_dir, seed=config.experiment.base_seed)
+    stats = compute_significance(
+        metrics_frame,
+        baseline_variant=baseline_variant,
+        out_dir=out_dir,
+        seed=config.experiment.base_seed,
+    )
 
     tavily = TavilyClient()
     gemini = GeminiClient()
@@ -37,10 +46,20 @@ def run_pipeline(config_path: str = "config.yaml") -> None:
     write_typst(section, out_dir / "paper.typ")
 
     events = [
-        TelemetryEvent(timestamp=datetime.now(timezone.utc), event="run_completed", payload={"variants": len(variants)}),
-        TelemetryEvent(timestamp=datetime.now(timezone.utc), event="stat_tests_generated", payload={"count": len(stats)}),
+        TelemetryEvent(
+            timestamp=datetime.now(UTC),
+            event="run_completed",
+            payload={"variants": len(variants)},
+        ),
+        TelemetryEvent(
+            timestamp=datetime.now(UTC),
+            event="stat_tests_generated",
+            payload={"count": len(stats)},
+        ),
     ]
-    (out_dir / "telemetry.json").write_text(json.dumps([e.model_dump(mode="json") for e in events], indent=2))
+    (out_dir / "telemetry.json").write_text(
+        json.dumps([e.model_dump(mode="json") for e in events], indent=2)
+    )
 
 
 def summarize(config_path: str = "config.yaml") -> str:
