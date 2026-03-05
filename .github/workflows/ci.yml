@@ -90,6 +90,7 @@ jobs:
 
   deploy-pages:
     needs: docs
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       pages: write
       id-token: write

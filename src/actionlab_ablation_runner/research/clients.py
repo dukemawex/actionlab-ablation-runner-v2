@@ -65,7 +65,6 @@ class OpenRouterClient:
         body = {
             "model": self.model,
             "messages": [{"role": "user", "content": prompt}],
-            "response_format": {"type": "json_object"},
         }
         with httpx.Client(timeout=60.0) as client:
             response = client.post(endpoint, headers=headers, json=body)
