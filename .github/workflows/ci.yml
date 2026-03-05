@@ -1,0 +1,93 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -e .[dev]
+      - run: ruff check .
+      - run: mypy src
+      - run: pytest
+
+  live-api-integration:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.TAVILY_API_KEY != '' && secrets.GEMINI_API_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -e .[dev]
+      - run: pytest tests/integration/test_live_research_apis.py -m integration
+        env:
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+  full-pipeline:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.TAVILY_API_KEY != '' && secrets.GEMINI_API_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -e .[dev]
+      - run: actionlab run --config config.yaml
+        env:
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      - run: test -f artifacts/paper.typ
+
+  build-paper:
+    runs-on: ubuntu-latest
+    needs: [lint-test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: typst-community/setup-typst@v3
+      - run: mkdir -p artifacts && test -f artifacts/paper.typ || echo '= Placeholder' > artifacts/paper.typ
+      - run: typst compile artifacts/paper.typ artifacts/paper.pdf
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -e .[dev]
+      - run: mkdocs build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy-pages:
+    needs: docs
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -e .[dev]
+      - run: pip-audit
+      - run: cyclonedx-py requirements -o sbom.json
