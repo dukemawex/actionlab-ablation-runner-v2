@@ -22,14 +22,22 @@ def _single_run(config: ExperimentConfig, variant: Variant, run_index: int) -> R
     dropout = float(variant.params.get("dropout", 0.1))
     optimizer = str(variant.params.get("optimizer", "adam"))
     opt_bonus = 0.01 if optimizer == "adam" else -0.005
-    accuracy = float(0.75 + opt_bonus + (0.01 - lr) + (0.25 - dropout) * 0.03 + rng.normal(0, 0.005))
+    accuracy = float(
+        0.75 + opt_bonus + (0.01 - lr) + (0.25 - dropout) * 0.03 + rng.normal(0, 0.005)
+    )
     f1 = float(accuracy - 0.02 + rng.normal(0, 0.004))
     return RunMetric(variant=variant.name, run_index=run_index, seed=seed, accuracy=accuracy, f1=f1)
 
 
-def run_experiments(config: ExperimentConfig, variants: list[Variant], out_dir: Path) -> pd.DataFrame:
+def run_experiments(
+    config: ExperimentConfig, variants: list[Variant], out_dir: Path
+) -> pd.DataFrame:
     out_dir.mkdir(parents=True, exist_ok=True)
-    jobs = [(variant, run_idx) for variant in variants for run_idx in range(config.runs_per_variant)]
+    jobs = [
+        (variant, run_idx)
+        for variant in variants
+        for run_idx in range(config.runs_per_variant)
+    ]
     with ThreadPoolExecutor(max_workers=config.max_workers) as executor:
         rows = list(executor.map(lambda args: _single_run(config, args[0], args[1]), jobs))
     frame = pd.DataFrame([row.model_dump() for row in rows])

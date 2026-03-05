@@ -10,7 +10,7 @@ from actionlab_ablation_runner.schemas import Variant
 
 def _hash_params(params: dict[str, Any]) -> str:
     normalized = json.dumps(params, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha1(normalized.encode("utf-8")).hexdigest()[:10]
+    return hashlib.sha1(normalized.encode("utf-8"), usedforsecurity=False).hexdigest()[:10]
 
 
 def generate_variants(ablations: dict[str, list[Any]]) -> list[Variant]:

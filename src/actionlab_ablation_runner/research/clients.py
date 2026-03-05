@@ -22,7 +22,12 @@ class TavilyClient:
         with httpx.Client(timeout=30.0) as client:
             response = client.post(
                 "https://api.tavily.com/search",
-                json={"api_key": self.api_key, "query": topic, "max_results": 5, "search_depth": "advanced"},
+                json={
+                    "api_key": self.api_key,
+                    "query": topic,
+                    "max_results": 5,
+                    "search_depth": "advanced",
+                },
             )
             response.raise_for_status()
             data = response.json()
@@ -52,11 +57,15 @@ class GeminiClient:
             f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
             f"?key={self.api_key}"
         )
-        body = {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"response_mime_type": "application/json"}}
+        body = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"response_mime_type": "application/json"},
+        }
         with httpx.Client(timeout=60.0) as client:
             response = client.post(endpoint, json=body)
             response.raise_for_status()
-            return response.json()
+            result: dict[str, Any] = response.json()
+            return result
 
 
 def synthesize_research(
@@ -67,9 +76,11 @@ def synthesize_research(
 ) -> GeminiSection:
     citation_lines = "\n".join(f"- {s.title}: {s.url}" for s in sources)
     prompt = (
-        "Produce JSON with keys abstract, methods, interpretation, hypothesis_framing, statistical_testing, "
-        "threats_to_validity, ethical_considerations, citations. Interpret this ablation table:\n"
-        f"{ablation_table_markdown}\nUse these verified sources and cite only listed URLs:\n{citation_lines}"
+        "Produce JSON with keys abstract, methods, interpretation, hypothesis_framing, "
+        "statistical_testing, threats_to_validity, ethical_considerations, citations. "
+        "Interpret this ablation table:\n"
+        f"{ablation_table_markdown}\n"
+        f"Use these verified sources and cite only listed URLs:\n{citation_lines}"
     )
     raw = client.generate_section(prompt)
     out_dir.mkdir(parents=True, exist_ok=True)

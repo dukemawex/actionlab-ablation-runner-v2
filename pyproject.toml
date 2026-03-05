@@ -34,6 +34,7 @@ dev = [
   "cyclonedx-bom>=4.1",
   "mkdocs>=1.6",
   "mkdocs-material>=9.5",
+  "types-PyYAML>=6.0",
 ]
 
 [project.scripts]
@@ -62,4 +63,8 @@ python_version = "3.11"
 strict = true
 mypy_path = "src"
 packages = ["actionlab_ablation_runner"]
+
+[[tool.mypy.overrides]]
+module = ["yaml", "pandas", "pandas.*", "scipy", "scipy.*"]
+ignore_missing_imports = true
 

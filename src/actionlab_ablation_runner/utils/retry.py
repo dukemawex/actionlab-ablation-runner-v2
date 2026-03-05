@@ -9,8 +9,10 @@ T = TypeVar("T")
 
 
 def with_backoff(func: Callable[..., T]) -> Callable[..., T]:
-    decorated = retry(wait=wait_exponential(multiplier=1, min=1, max=8), stop=stop_after_attempt(3))(func)
-    return decorated  # type: ignore[return-value]
+    decorated = retry(
+        wait=wait_exponential(multiplier=1, min=1, max=8), stop=stop_after_attempt(3)
+    )(func)
+    return decorated
 
 
 def redact_secrets(payload: dict[str, Any]) -> dict[str, Any]:
